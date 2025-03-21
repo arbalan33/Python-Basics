@@ -12,7 +12,27 @@ Examples:
     []
 """
 from typing import List, Any
+import unittest
 
 
 def delete_from_list(list_to_clean: List, item_to_delete: Any) -> List:
-    ...
+    for i in reversed(range(len(list_to_clean))):
+        if list_to_clean[i] == item_to_delete:
+            list_to_clean.pop(i)
+    return list_to_clean
+
+
+class TestDeleteFromList(unittest.TestCase):
+    def test_remove_existing_element(self):
+        self.assertEqual(delete_from_list([1, 2, 3, 4, 3], 3), [1, 2, 4])
+        self.assertEqual(delete_from_list(['a', 'b', 'c', 'b', 'd'], 'b'), ['a', 'c', 'd'])
+
+    def test_remove_non_existent_element(self):
+        self.assertEqual(delete_from_list([1, 2, 3], 'b'), [1, 2, 3])
+
+    def test_empty_list(self):
+        self.assertEqual(delete_from_list([], 'b'), [])
+
+
+if __name__ == "__main__":
+    unittest.main()
