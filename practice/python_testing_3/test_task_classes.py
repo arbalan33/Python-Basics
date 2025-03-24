@@ -14,7 +14,8 @@ def test_homework_expiration():
     homework = Homework('Learn functions', datetime.timedelta(days=1))
     assert homework.is_active()
 
-    expired_homework = Homework('Learn functions', datetime.timedelta(milliseconds=1))
+    expired_homework = Homework(
+        'Learn functions', datetime.timedelta(milliseconds=1))
     time.sleep(0.1)
     assert not expired_homework.is_active()
 
@@ -32,7 +33,8 @@ def test_student_homework():
 
 def test_student_expired_homework(capsys):
     student = Student("lastname", "firstname")
-    expired_homework = Homework('Learn functions', datetime.timedelta(milliseconds=1))
+    expired_homework = Homework(
+        'Learn functions', datetime.timedelta(milliseconds=1))
     time.sleep(0.1)
 
     assert student.do_homework(expired_homework) is None
@@ -55,7 +57,7 @@ def test_scenario():
 
     expired_homework = Teacher.create_homework('Learn functions', 0)
     assert isinstance(expired_homework.created, datetime.datetime)
-    assert expired_homework.deadline  == datetime.timedelta()
+    assert expired_homework.deadline == datetime.timedelta()
     assert expired_homework.text == 'Learn functions'
 
     # create function from method and use it

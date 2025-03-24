@@ -33,16 +33,16 @@ class Homework:
         self.text = text
         self.deadline = deadline
         self.created = datetime.datetime.now()
-    
+
     def is_active(self) -> bool:
         return datetime.datetime.now() < self.created + self.deadline
-    
+
 
 class Teacher:
     def __init__(self, last_name, first_name):
         self.last_name = last_name
         self.first_name = first_name
-    
+
     def create_homework(task_text: str, days: int):
         return Homework(task_text, datetime.timedelta(days=days))
 
@@ -51,7 +51,7 @@ class Student:
     def __init__(self, last_name, first_name):
         self.last_name = last_name
         self.first_name = first_name
-    
+
     def do_homework(self, hw: Homework):
         if hw.is_active():
             return hw
