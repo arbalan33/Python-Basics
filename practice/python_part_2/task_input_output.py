@@ -18,15 +18,16 @@ Examples:
 
 def read_numbers(n: int) -> str:
     print(f"Write {n} numbers as a comma-separated list (e.g. \"1, 1.2, 3\")")
-    # user provides a line of comma-separated words (numbers) as input
+    # user provides a list of comma-separated words (numbers) as input
     words = input().split(',')
     if len(words) > n:
         raise RuntimeError(f"Expected at most {n} numbers")
 
+    # try to convert them to numbers
     numbers = []
-    for value in words:
+    for w in words:
         try:
-            numbers.append(float(value.strip()))
+            numbers.append(float(w.strip()))
         except ValueError:
             continue
     
