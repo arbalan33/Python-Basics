@@ -15,7 +15,9 @@ from collections import Counter
 
 
 def remove_duplicated_words(line: str) -> str:
-    unique_words: list[str] = list(Counter(line.split()).keys())
+    # Counter (dict) preserves order, while set doesn't
+    c = Counter(line.split())
+    unique_words: list[str] = list(c.keys())
     return ' '.join(unique_words)
 
 
