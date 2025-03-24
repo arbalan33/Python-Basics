@@ -28,16 +28,36 @@ PEP8 comply strictly.
 import datetime
 
 
+class Homework:
+    def __init__(self, text: str, deadline: datetime.timedelta):
+        self.text = text
+        self.deadline = deadline
+        self.created = datetime.datetime.now()
+    
+    def is_active(self) -> bool:
+        return datetime.datetime.now() < self.created + self.deadline
+    
+
 class Teacher:
-    ...
+    def __init__(self, last_name, first_name):
+        self.last_name = last_name
+        self.first_name = first_name
+    
+    def create_homework(task_text: str, days: int):
+        return Homework(task_text, datetime.timedelta(days=days))
 
 
 class Student:
-    ...
-
-
-class Homework:
-    ...
+    def __init__(self, last_name, first_name):
+        self.last_name = last_name
+        self.first_name = first_name
+    
+    def do_homework(self, hw: Homework):
+        if hw.is_active():
+            return hw
+        else:
+            print('You are late')
+            return None
 
 
 if __name__ == '__main__':
@@ -46,13 +66,13 @@ if __name__ == '__main__':
     teacher.last_name  # Daniil
     student.first_name  # Petrov
 
-    expired_homework = teacher.create_homework('Learn functions', 0)
+    expired_homework = Teacher.create_homework('Learn functions', 0)
     expired_homework.created  # Example: 2019-05-26 16:44:30.688762
     expired_homework.deadline  # 0:00:00
     expired_homework.text  # 'Learn functions'
 
     # create function from method and use it
-    create_homework_too = teacher.create_homework
+    create_homework_too = Teacher.create_homework
     oop_homework = create_homework_too('create 2 simple classes', 5)
     oop_homework.deadline  # 5 days, 0:00:00
 
