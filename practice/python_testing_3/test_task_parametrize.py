@@ -10,6 +10,7 @@ Task:
  2. Find the buggy function and fix it.
 """
 
+import pytest
 
 def fibonacci_1(n):
     a, b = 0, 1
@@ -23,3 +24,19 @@ def fibonacci_2(n):
     for i in range(1, n+1):
         fibo.append(fibo[i-1] + fibo[i-2])
     return fibo[n]
+
+
+def fibonacci_2_fixed(n):
+    fibo = [0, 1]
+    for i in range(1, n+1):
+        fibo.append(fibo[i] + fibo[i-1])
+    return fibo[n]
+
+
+
+@pytest.mark.parametrize("fib", [fibonacci_1, 
+                                #  fibonacci_2,
+                                 fibonacci_2_fixed])
+@pytest.mark.parametrize("inp,expected", [(1, 1), (10, 55)])
+def test_fibbonacci(fib, inp, expected):
+    assert fib(inp) == expected
