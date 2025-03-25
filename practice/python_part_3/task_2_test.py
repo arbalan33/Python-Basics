@@ -11,11 +11,41 @@ Examples:
 """
 import math
 
+import pytest
 
-def math_calculate(function: str, *args):
-    ...
+
+class OperationNotFoundException(Exception):
+    pass
+
+
+def math_calculate(function_name: str, *args):
+    if len(args) not in (1, 2):
+        raise ValueError
+    
+    try:
+        func = getattr(math, function_name)
+    except AttributeError:
+        raise OperationNotFoundException
+
+    return func(*args)
+        
 
 
 """
 Write tests for math_calculate function
 """
+
+def test_math_calculate():
+    assert math_calculate("log", 10) == math.log(10)
+    assert math_calculate("pow", 10, 10) == math.pow(10, 10)
+
+
+def test_math_calculate_nonexistent():
+    with pytest.raises(OperationNotFoundException):
+        math_calculate("foobar", 1)
+
+
+def test_math_calculate_args_number():
+    '''We're expecting a certain number of args'''
+    with pytest.raises(ValueError):
+        math_calculate("pi")
