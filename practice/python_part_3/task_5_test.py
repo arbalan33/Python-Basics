@@ -5,11 +5,19 @@ Examples:
      >>> make_request('https://www.google.com')
      200, 'response data'
 """
+from unittest.mock import Mock, patch, MagicMock
+import pytest
 from typing import Tuple
 
 
+import urllib.request
+
+
 def make_request(url: str) -> Tuple[int, str]:
-    ...
+    with urllib.request.urlopen(url) as response:
+        status_code = response.getcode()  # Get HTTP status code
+        data = response.read().decode('utf-8')  # Read and decode response
+        return status_code, data
 
 
 """
@@ -24,3 +32,19 @@ Example:
     >>> m.method2()
     b'some text'
 """
+
+
+def test_make_request_success():
+    '''urlopen returns a context manager, so we need to patch that.'''
+    cm = MagicMock()
+    cm.getcode.return_value = 200
+    cm.read.return_value = b'Fake response text'
+    cm.__enter__.return_value = cm
+    mock_urlopen = Mock()
+    mock_urlopen.return_value = cm
+
+    with patch('urllib.request.urlopen', return_value=cm):
+        status, content = make_request('https://example.com')
+
+    assert status == 200
+    assert content == 'Fake response text'
