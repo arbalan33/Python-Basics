@@ -2,7 +2,7 @@ from statistics import mean
 from lxml import etree
 
 
-def check_result(xml_path: str):
+def check_result(xml_path: str, num_cities = 17):
     """Function to check weather XML file for Spain for 2021-09-25"""
 
     tree = etree.parse(xml_path)
@@ -25,7 +25,7 @@ def check_result(xml_path: str):
             summary = child.attrib
 
         if child.tag == 'cities':
-            assert len([c for c in child]) == 17, f"Invalid number of cities in XML: {len([c for c in child])}"
+            assert len([c for c in child]) == num_cities, f"Invalid number of cities in XML: {len([c for c in child])}"
             cities_summary = {}
             for city in child:
                 city_attribs = {'mean_temp', 'mean_wind_speed',
@@ -68,5 +68,5 @@ def check_result(xml_path: str):
     print("Success!")
 
 
-if __name__ == '__main__':
-    check_result(xml_path='./example_result.xml')
+def test_func():
+    check_result('practice/5_additional_topics/parsing_serialization_task/src/out.xml')
