@@ -32,3 +32,11 @@ Links:
     - lxml docs: https://lxml.de/
 """
 
+
+'''
+My notes:
+- There's 25 results on the Most Active stocks page, but there's also pagination and 253 results in total.
+  For a proof-of-concept, I'll limit the data to those top 25 stocks,
+  but with a `count=100` request param, we can get top 100,
+  and then by following the pages we can get them all.
+'''
