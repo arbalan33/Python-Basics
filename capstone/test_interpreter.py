@@ -89,6 +89,9 @@ def test_parse(inp, expected_AST):
 @pytest.mark.parametrize(
     "inp",
     [
+        # invalid JSON
+        'test.txt',
+
         # at least one field spec required
         '{}',
 

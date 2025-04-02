@@ -151,11 +151,11 @@ def evaluate_field_spec(spec: tuple[str, any]):
     # literal values are returned as-is (int and str)
     if isinstance(modi, int):
         if typ != 'int':
-            raise ParsingError("Wrong field type for int value")
+            raise ParsingError("Field type doesn't support integer literal")
         return modi
     if isinstance(modi, str):
         if typ != 'str':
-            raise ParsingError("Wrong field type for str value")
+            raise ParsingError("Field type doesn't support string literal")
         return modi
 
     # random
