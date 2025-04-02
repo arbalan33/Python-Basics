@@ -3,7 +3,7 @@ import uuid
 import json
 import re
 import random
-
+import logging
 
 '''
 Syntax:
@@ -96,11 +96,12 @@ def evaluate_field_spec(spec: tuple[str, any]):
 
     # timestamp is returned no matter the modifier
     if typ == 'timestamp':
+        if modi != None:
+            logging.warning('Modifiers are ignored in timestamp field')
         return time.time()
 
     if modi is None:
         return '' if typ == 'str' else None
-    
 
     # literal values are returned as-is (int and str)
     if isinstance(modi, int):
@@ -117,7 +118,8 @@ def evaluate_field_spec(spec: tuple[str, any]):
     if isinstance(modi, tuple) and modi[0] == 'rand':
         if typ == 'str':
             if len(modi) != 1:
-                raise ParsingError('String fields don\'t support rand with range')
+                raise ParsingError(
+                    'String fields don\'t support rand with range')
             return str(uuid.uuid4())
 
         # random ints
@@ -127,19 +129,20 @@ def evaluate_field_spec(spec: tuple[str, any]):
         if typ == 'int' and modi[0] == 'rand' and len(modi) == 3:
             _, start, end = modi
             return random.randint(start, end)
-    
+
     # lists
     if isinstance(modi, list):
         if typ == 'str':
             if not all(isinstance(item, str) for item in modi):
-                raise ParsingError('List items of a string field must be strings')
-        
+                raise ParsingError(
+                    'List items of a string field must be strings')
+
         if typ == 'int':
             if not all(isinstance(item, int) for item in modi):
                 raise ParsingError('List items of a string field must be ints')
-            
+
         return random.choice(modi)
-            
+
     return None
 
 

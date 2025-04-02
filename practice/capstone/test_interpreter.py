@@ -95,19 +95,18 @@ def test_parse(inp, expected_AST):
         # rand arguments must be int
         '{"name": "int:rand(a, b)"}',
 
-    # at least one element required in list
+        # at least one element required in list
         '''{"name": "str:[]"}''',
 
         # string value can only contain alphanumeric chars
         '{"name": "str:a1+"}',
-        
+
         # integer value
         '{"name": "str:1e"}',
     ])
 def test_raises(inp):
     with pytest.raises(ParsingError):
         parse(inp)
-
 
 
 def test_fields_count():
@@ -118,12 +117,10 @@ def test_fields_count():
     assert list(res.keys()) == ['num', 'f']
 
 
-
 def test_rand_int():
     ast = {'num': ('int', ('rand',))}
     res = evaluate(ast)
     assert isinstance(res['num'], int)
-
 
     ast = {'num': ('int', ('rand', 1, 1))}
     res = evaluate(ast)
@@ -168,8 +165,6 @@ def test_timestamp():
     ast = {'f': ('timestamp', 'test')}
     res = evaluate(ast)
     assert isinstance(res['f'], float)
-
-
 
 
 @pytest.mark.parametrize(
