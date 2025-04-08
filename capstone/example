@@ -1,0 +1,4 @@
+#!/bin/sh
+
+python myfaker.py out --files-count=1000 --file-name=super_data --file-suffix=count --multiprocessing=10 -r \
+    --data-schema="{\"date\": \"timestamp:\",\"name\": \"str:rand\",\"type\": \"str:['client', 'partner', 'government']\",\"age\": \"int:rand(1, 90)\"}"

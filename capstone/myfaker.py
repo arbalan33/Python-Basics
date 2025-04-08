@@ -12,6 +12,9 @@ import uuid
 from interpreter import generate_object, ParsingError
 
 
+class ArgumentError(Exception):
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s\t%(levelname)s\t%(message)s",
@@ -86,13 +89,15 @@ argparser.add_argument(
 
 def generate_file(directory: pathlib.Path, schema: str,
                   file_base_name: str, file_suffix: str,
-                  data_lines: int) -> None:
+                  data_lines: int, index=0) -> None:
     if file_suffix == 'uuid':
         suffix = '_' + str(uuid.uuid4())
-    elif file_suffix == 'int':
-        suffix = '_' + str(i)
+    elif file_suffix == 'count':
+        suffix = '_' + str(index)
     elif file_suffix == 'random':
         suffix = '_' + str(uuid.uuid4())
+    else:
+        raise ArgumentError('Invalid value for --file-suffix')
 
     fpath = directory / (file_base_name + suffix + '.jsonl')
 
@@ -109,9 +114,9 @@ def generate_files_async(directory: pathlib.Path, schema: str,
     with multiprocessing.Pool(processes=num_processes) as pool:
         results = []
 
-        for file_index in range(files_count):
+        for i in range(files_count):
             result = pool.apply_async(
-                generate_file, (directory, schema, file_base_name, file_suffix, data_lines))
+                generate_file, (directory, schema, file_base_name, file_suffix, data_lines, i))
             results.append(result)
 
         pool.close()
@@ -143,7 +148,7 @@ def run_cli(argv=None):
     try:
         out_dir = pathlib.Path(args.directory)
     except:
-        raise ValueError('Can\'t find output directory')
+        raise ArgumentError('Can\'t find output directory')
 
     try:
         path = pathlib.Path(args.data_schema)
@@ -152,10 +157,10 @@ def run_cli(argv=None):
         schema = args.data_schema
 
     if args.files_count < 0:
-        raise ValueError('Files count cannot be negative')
+        raise ArgumentError('Files count cannot be negative')
 
     if args.multiprocessing < 1:
-        raise ValueError('Multiprocessing must be a natural number')
+        raise ArgumentError('Multiprocessing must be a natural number')
 
     elif args.multiprocessing > os.cpu_count():
         args.multiprocessing = os.cpu_count()
@@ -173,9 +178,9 @@ def run_cli(argv=None):
         generate_to_stdout(schema, args.data_lines)
     else:
         if args.multiprocessing == 1:
-            for _ in range(args.files_count):
+            for i in range(args.files_count):
                 generate_file(out_dir, schema, args.file_name, args.file_suffix,
-                              args.data_lines)
+                              args.data_lines, index=i)
         else:
             generate_files_async(out_dir, schema, args.file_name, args.file_suffix,
                                  args.data_lines, args.files_count, args.multiprocessing)
@@ -190,7 +195,7 @@ if __name__ == '__main__':
     except ParsingError as e:
         logging.error("Syntax error: " + str(e))
         sys.exit(1)
-    except ValueError as e:
+    except ArgumentError as e:
         logging.error("Argument error: " + str(e))
         sys.exit(1)
     except Exception as e:
