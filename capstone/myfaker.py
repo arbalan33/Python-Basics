@@ -22,33 +22,40 @@ logging.basicConfig(
 
 config = configparser.ConfigParser()
 config.read('default.ini')
-defaults: dict = dict(config['DEFAULT'])
+config_dict: dict = dict(config['DEFAULT'])
 
 argparser = argparse.ArgumentParser(prog='myfaker',
                                     description='Utility for generating test data based on the provided data schema',
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 argparser.add_argument(
     'directory',
-    default=defaults.get('file_suffix', 'uuid'),
+    default=config_dict.get('directory', 'out'),
     help='Path to directory in which to save generated files'
 )
 
 argparser.add_argument(
-    '--files-count',
+    '--data-schema', '-s',
+    required=True,
+    type=str,
+    help='Schema string or path to JSON file with the schema'
+)
+
+argparser.add_argument(
+    '--files-count', '-n',
     type=int,
-    default=defaults.get('files_count', 0),
+    default=config_dict.get('files_count', 0),
     help='Number of files to generate'
 )
 
 argparser.add_argument(
-    '--file-name',
-    default=defaults.get('file_name', 'myfaker_data'),
+    '--file-name', '-b',
+    default=config_dict.get('file_name', 'myfaker_data'),
     help='Base filename of the created files'
 )
 
 argparser.add_argument(
-    '--file-suffix',
-    default=defaults.get('file_suffix', 'uuid'),
+    '--file-suffix', '-x',
+    default=config_dict.get('file_suffix', 'uuid'),
     choices=['count', 'random', 'uuid'],
     help=(
         'Type of suffix to be appended to the base filename '
@@ -57,34 +64,28 @@ argparser.add_argument(
 )
 
 argparser.add_argument(
-    '--data-lines',
+    '--data-lines', '-l',
     type=int,
-    default=defaults.get('data_lines', 10),
+    default=config_dict.get('data_lines', 1),
     help='How many lines to generate in each file'
 )
 
 argparser.add_argument(
-    '--clear-path',
+    '--clear-path', '-r',
     action='store_true',
     help='Delete existing files with the same base filename'
 )
 
 argparser.add_argument(
-    '--multiprocessing',
+    '--multiprocessing', '-j',
     type=int,
-    default=defaults.get('multiprocessing', 1),
+    default=config_dict.get('multiprocessing', 1),
     help='Number of concurrent jobs (limited by CPU cores)'
 )
 
-argparser.add_argument(
-    '--data-schema',
-    required=True,
-    type=str,
-    help='Schema string or path to JSON file with the schema'
-)
 
-
-def generate_files(schema: str, file_base_name: str, file_suffix: str,
+def generate_files(directory: pathlib.Path, schema: str,
+                   file_base_name: str, file_suffix: str,
                    files_count: int, data_lines: int) -> None:
     for i in range(files_count):
         if file_suffix == 'uuid':
@@ -92,10 +93,10 @@ def generate_files(schema: str, file_base_name: str, file_suffix: str,
         elif file_suffix == 'int':
             suffix = '_' + str(i)
         elif file_suffix == 'random':
-            # TODO random??
-            suffix = '_' + str(i)
-        fpath = pathlib.Path(file_base_name + suffix + '.jsonl')
-        
+            suffix = '_' + str(uuid.uuid4())
+
+        fpath = directory / (file_base_name + suffix + '.jsonl')
+
         for _ in range(data_lines):
             obj = generate_object(schema)
             with fpath.open('a') as f:
@@ -108,10 +109,26 @@ def generate_to_stdout(schema: str, count: int):
         print(json.dumps(obj))
 
 
-def run_cli():
-    args = argparser.parse_args()
+def clear_files_with_prefix(dir: pathlib.Path, prefix):
+    '''Given a directory and a prefix string,
+    delete all files with matching prefix in their filename from the directory'''
+
+    for file in dir.iterdir():
+        if file.is_file() and file.name.startswith(prefix):
+            file.unlink()  # Delete the file
+
+
+def run_cli(argv=None):
+    '''Run the CLI app on the provided arguments,
+    or on the sys.argv list if argv is None'''
+    args = argparser.parse_args(argv)
 
     # Input validation
+
+    try:
+        out_dir = pathlib.Path(args.directory)
+    except:
+        raise ValueError('Can\'t find output directory')
 
     try:
         path = pathlib.Path(args.data_schema)
@@ -119,16 +136,11 @@ def run_cli():
     except:
         schema = args.data_schema
 
-    # clear_path is an activation flag, so we have to set its default like this
-    args.clear_path = defaults.get('clear_path', args.clear_path)
-
     if args.files_count < 0:
-        logging.error('Files count cannot be negative')
-        exit(1)
+        raise ValueError('Files count cannot be negative')
 
     if args.multiprocessing < 1:
-        logging.error('Multiprocessing must be a natural number')
-        exit(1)
+        raise ValueError('Multiprocessing must be a natural number')
 
     elif args.multiprocessing > os.cpu_count():
         args.multiprocessing = os.cpu_count()
@@ -137,23 +149,30 @@ def run_cli():
 
     # Processing
 
+    if args.clear_path and args.files_count != 0:
+        clear_files_with_prefix(out_dir, args.file_name)
+
     logging.info('Generating data...')
     if args.files_count == 0:
         generate_to_stdout(schema, args.data_lines)
     else:
-        generate_files(schema, args.file_name, args.file_suffix,
+        generate_files(out_dir, schema, args.file_name, args.file_suffix,
                        args.files_count, args.data_lines)
     logging.info('Data generated')
 
 
 if __name__ == '__main__':
+    # redirect traceback to file
     try:
         run_cli()
     except ParsingError as e:
         logging.error("Syntax error: " + str(e))
-        sys.exit(1)  # Ensure a non-zero exit code for errors
+        sys.exit(1)
+    except ValueError as e:
+        logging.error("Argument error: " + str(e))
+        sys.exit(1)
     except Exception as e:
         logging.error("An unhandled exception occurred: " + str(e))
         with open('error_log.txt', 'a') as f:
             f.write(traceback.format_exc())
-        sys.exit(1)  # Ensure a non-zero exit code for errors
+        sys.exit(1)
