@@ -85,4 +85,22 @@ def test_saving_files(tmp_path):
 
     files = list(out_dir.iterdir())
     assert len(files) == files_count
-    
+    for f in files:
+        assert f.read_text() == '"MOCK"\n'
+
+
+
+
+def test_multiprocessing(tmp_path):
+    '''More of an integration test because mocking multiprocessing is more involved'''
+    files_count = 100
+
+    out_dir = tmp_path / 'out'
+    out_dir.mkdir()
+
+    myfaker.run_cli([str(out_dir), "-s", '{"time": "timestamp:"}',
+                    '--file-name=test', '--files-count', str(files_count),
+                    '--multiprocessing', str(8)])
+
+    files = list(out_dir.iterdir())
+    assert len(files) == files_count

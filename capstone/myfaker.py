@@ -84,23 +84,38 @@ argparser.add_argument(
 )
 
 
-def generate_files(directory: pathlib.Path, schema: str,
-                   file_base_name: str, file_suffix: str,
-                   files_count: int, data_lines: int) -> None:
-    for i in range(files_count):
-        if file_suffix == 'uuid':
-            suffix = '_' + str(uuid.uuid4())
-        elif file_suffix == 'int':
-            suffix = '_' + str(i)
-        elif file_suffix == 'random':
-            suffix = '_' + str(uuid.uuid4())
+def generate_file(directory: pathlib.Path, schema: str,
+                  file_base_name: str, file_suffix: str,
+                  data_lines: int) -> None:
+    if file_suffix == 'uuid':
+        suffix = '_' + str(uuid.uuid4())
+    elif file_suffix == 'int':
+        suffix = '_' + str(i)
+    elif file_suffix == 'random':
+        suffix = '_' + str(uuid.uuid4())
 
-        fpath = directory / (file_base_name + suffix + '.jsonl')
+    fpath = directory / (file_base_name + suffix + '.jsonl')
 
-        for _ in range(data_lines):
-            obj = generate_object(schema)
-            with fpath.open('a') as f:
-                f.write(json.dumps(obj) + '\n')
+    for _ in range(data_lines):
+        obj = generate_object(schema)
+        with fpath.open('a') as f:
+            f.write(json.dumps(obj) + '\n')
+
+
+def generate_files_async(directory: pathlib.Path, schema: str,
+                         file_base_name: str, file_suffix: str,
+                         data_lines: int, files_count: int, num_processes: int) -> None:
+
+    with multiprocessing.Pool(processes=num_processes) as pool:
+        results = []
+
+        for file_index in range(files_count):
+            result = pool.apply_async(
+                generate_file, (directory, schema, file_base_name, file_suffix, data_lines))
+            results.append(result)
+
+        pool.close()
+        pool.join()
 
 
 def generate_to_stdout(schema: str, count: int):
@@ -153,11 +168,18 @@ def run_cli(argv=None):
         clear_files_with_prefix(out_dir, args.file_name)
 
     logging.info('Generating data...')
+
     if args.files_count == 0:
         generate_to_stdout(schema, args.data_lines)
     else:
-        generate_files(out_dir, schema, args.file_name, args.file_suffix,
-                       args.files_count, args.data_lines)
+        if args.multiprocessing == 1:
+            for _ in range(args.files_count):
+                generate_file(out_dir, schema, args.file_name, args.file_suffix,
+                              args.data_lines)
+        else:
+            generate_files_async(out_dir, schema, args.file_name, args.file_suffix,
+                                 args.data_lines, args.files_count, args.multiprocessing)
+
     logging.info('Data generated')
 
 
