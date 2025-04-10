@@ -43,6 +43,7 @@ class Teacher:
         self.last_name = last_name
         self.first_name = first_name
 
+    @staticmethod
     def create_homework(task_text: str, days: int):
         return Homework(task_text, datetime.timedelta(days=days))
 
