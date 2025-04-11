@@ -31,6 +31,7 @@ def read_files_from_dir(directory: str) -> list[str]:
 
 def safe_int(s: str) -> bool:
     try:
+        int(s)
         return True
     except ValueError:
         return False
