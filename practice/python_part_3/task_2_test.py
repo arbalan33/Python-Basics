@@ -18,7 +18,7 @@ class OperationNotFoundException(Exception):
     pass
 
 
-def math_calculate(function_name: str, *args):
+def math_calculate(function_name: str, *args) -> any:
     if len(args) not in (1, 2):
         raise ValueError
     

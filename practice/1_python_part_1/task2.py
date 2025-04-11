@@ -13,7 +13,7 @@ from typing import Dict
 import unittest
 
 
-def set_to_dict(dict_to_update: Dict[str, int], **items_to_set) -> Dict:
+def set_to_dict(dict_to_update: Dict[str, int], **items_to_set) -> Dict[str, int]:
     for k, v in items_to_set.items():
         if dict_to_update.get(k) is not None and dict_to_update[k] >= v:
             continue

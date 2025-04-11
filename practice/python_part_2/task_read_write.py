@@ -36,7 +36,7 @@ def safe_int(s: str) -> bool:
         return False
     
 
-def extract_numbers_from_files(directory: str, output_file: str = "result.txt"):
+def extract_numbers_from_files(directory: str, output_file: str = "result.txt") -> None:
     contents = read_files_from_dir(directory)    
     numbers = [int(s) for s in contents if safe_int(s)]
     output = ', '.join(str(n) for n in numbers)

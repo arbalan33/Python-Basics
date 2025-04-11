@@ -35,18 +35,19 @@ import faker
 from unittest import mock
 
 
-def parse_unknown_args(args_list):
+def parse_unknown_args(args_list: list[str]) -> dict[str, str]:
     '''
     This function parses the unknown arguments returned by `parse_known_args()`
-    only of the following form:
+    but only if the CLI arguments are of the following form:
     ['--fake-address=address', '--some_name=name']
-    and returns a dictionary like this:
+
+    Returns a dictionary like this:
     {'fake-address': 'address', 'some_name': 'name'}
     
     Note: argparse only parses arguments defined with `add_argument`, not arbitrary ones,
     so to parse arbitrary arguments you have to do it yourself:
-    https://stackoverflow.com/a/9643809'''
-    
+    https://stackoverflow.com/a/9643809
+    '''
 
     pattern = r"^--([^=]+)=([^=]+)$"
 

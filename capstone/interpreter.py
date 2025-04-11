@@ -7,8 +7,11 @@ import logging
 from typing import Union
 
 '''
-This module provides the `generate_object(spec)` function
-which takes a spec string and returns a python object according to the spec.
+Something like the python Faker package.
+
+This module implements a function generate_object(spec)
+which takes a "fake data specification string" and returns a python object
+with fields according to the spec, and with random values.
 
 ---
 
@@ -59,10 +62,13 @@ class ParsingError(Exception):
     """Raised when the input string does not match the expected grammar."""
     pass
 
+FieldModifier = Union[int, str, float]
 
-def parse_field_modifier(s: str) -> Union[int, str, float]:
+def parse_field_modifier(s: str) -> FieldModifier:
     '''The field modifier is parsed separately from the field type for simplicity,
-    but this also means we can't detect some syntax errors during parsing.'''
+    but this also means we can't detect some syntax errors during parsing.
+    They will be detected during evaluation instead.
+    '''
     if s == '':
         return None
 
@@ -107,8 +113,8 @@ def parse_field_modifier(s: str) -> Union[int, str, float]:
     return s
 
 
-def parse_field_spec(s: str) :
-    '''For example "int:range(1, 10)"
+def parse_field_spec(s: str) -> tuple[str, FieldModifier]:
+    '''E.g. "int:rand(1, 10)" returns ('int', ('rand', 1, 10))
     '''
     field_type, field_modifier_s = s.split(':')
 
@@ -120,7 +126,9 @@ def parse_field_spec(s: str) :
     return (field_type, field_modifier)
 
 
-def parse(s: str) -> dict[str, tuple]:
+AST = dict[str, tuple]
+
+def parse(s: str) -> AST:
     '''Takes a spec string and returns an AST'''
     try:
         obj = json.loads(s)
@@ -135,7 +143,7 @@ def parse(s: str) -> dict[str, tuple]:
     return AST
 
 
-def evaluate_field_spec(spec: tuple[str, any]):
+def evaluate_field_spec(spec: tuple[str, any]) -> any:
     typ, modi = spec
 
     # timestamp is the same no matter the modifier
@@ -189,12 +197,13 @@ def evaluate_field_spec(spec: tuple[str, any]):
 
     return None
 
+FakeObj = dict[str, any]
 
-def evaluate(ast: dict) -> dict[str, any]:
+def evaluate(ast: AST) -> FakeObj:
     return {name: evaluate_field_spec(spec) for name, spec in ast.items()}
 
 
-def generate_object(spec_str: str) -> dict[str, any]:
+def generate_object(spec_str: str) -> FakeObj:
     return evaluate(parse(spec_str))
 
 

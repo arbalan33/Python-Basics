@@ -26,10 +26,10 @@ Methods:
 PEP8 comply strictly.
 """
 import datetime
-
+from typing import Optional
 
 class Homework:
-    def __init__(self, text: str, deadline: datetime.timedelta):
+    def __init__(self, text: str, deadline: datetime.timedelta) -> None:
         self.text = text
         self.deadline = deadline
         self.created = datetime.datetime.now()
@@ -39,21 +39,21 @@ class Homework:
 
 
 class Teacher:
-    def __init__(self, last_name, first_name):
+    def __init__(self, last_name, first_name) -> None:
         self.last_name = last_name
         self.first_name = first_name
 
     @staticmethod
-    def create_homework(task_text: str, days: int):
+    def create_homework(task_text: str, days: int) -> Homework:
         return Homework(task_text, datetime.timedelta(days=days))
 
 
 class Student:
-    def __init__(self, last_name, first_name):
+    def __init__(self, last_name, first_name) -> None:
         self.last_name = last_name
         self.first_name = first_name
 
-    def do_homework(self, hw: Homework):
+    def do_homework(self, hw: Homework) -> Optional[Homework]:
         if hw.is_active():
             return hw
         else:
