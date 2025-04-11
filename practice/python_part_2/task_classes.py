@@ -39,7 +39,7 @@ class Homework:
 
 
 class Teacher:
-    def __init__(self, last_name, first_name) -> None:
+    def __init__(self, last_name: str, first_name: str) -> None:
         self.last_name = last_name
         self.first_name = first_name
 
@@ -49,7 +49,7 @@ class Teacher:
 
 
 class Student:
-    def __init__(self, last_name, first_name) -> None:
+    def __init__(self, last_name: str, first_name: str) -> None:
         self.last_name = last_name
         self.first_name = first_name
 
