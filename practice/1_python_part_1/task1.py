@@ -11,11 +11,12 @@ Examples:
     >>> delete_from_list([], 'b')
     []
 """
-from typing import List, Any
+from typing import TypeVar
 import unittest
 
 
-def delete_from_list(list_to_clean: List, item_to_delete: Any) -> List:
+T = TypeVar('T')
+def delete_from_list(list_to_clean: list[T], item_to_delete: any) -> list[T]:
     for i in reversed(range(len(list_to_clean))):
         if list_to_clean[i] == item_to_delete:
             list_to_clean.pop(i)
